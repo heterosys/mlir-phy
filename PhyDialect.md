@@ -245,14 +245,14 @@ operation ::= `phy.mmap` `(` $bus `[` $begin `:` $end `]` `,` $buffer `[` $offse
 ```
 
 An operation that maps the 'buffer' starting the 'offset'-th element,
-into the 'bus'.  The mapped address is from 'begin'-th element, to the
-'end'-th element on the bus.
+into the 'bus'.  The mapped address is from 'begin'-th element
+(inclusive), to the 'end'-th element (exclusive) on the bus.
 
 Example:
 
 ```mlir
 phy.mmap(%abus[10:15], %buf[20:] : memref<1024xi32>)
-// abus[10] will be buf[20], abus[11] will be buf[21], ... until abus[15]
+// abus[10] will be buf[20], abus[11] will be buf[21], ...
 ```
 
 #### Attributes:
@@ -422,7 +422,7 @@ blocking network data receive
 Syntax:
 
 ```
-operation ::= `phy.pop` `(` $network `,` $channel `)` attr-dict `:` type($result)
+operation ::= `phy.pop` `<` $channel `>` `(` $network `)` attr-dict `:` type($result)
 ```
 
 The `phy.pop` operation receive data from its operand network on the given
@@ -432,7 +432,7 @@ result.
 Example:
 
 ```mlir
-%0 = phy.pop(%net, 1) : i32
+%0 = phy.pop<1>(%net) : i32
 ```
 
 #### Attributes:
@@ -461,7 +461,7 @@ blocking network data send
 Syntax:
 
 ```
-operation ::= `phy.push` `(` $data `:` type($data) `,` $network `,` $channel `)` attr-dict
+operation ::= `phy.push` `<` $channel `>` `(` $data `:` type($data) `,` $network `)` attr-dict
 ```
 
 The `phy.pop` operation send data to its operand network on the given
@@ -472,7 +472,7 @@ If multiple receivers are on the channel, they will each get a copy.
 Example:
 
 ```mlir
-phy.push(%0 : i32, %net, 1)
+phy.push<1>(%0 : i32, %net)
 ```
 
 #### Attributes:
@@ -496,7 +496,7 @@ non-blocking network send test operation
 Syntax:
 
 ```
-operation ::= `phy.ready` `(` $network `:` type($network) `,` $channel `)` attr-dict
+operation ::= `phy.ready` `<` $channel `>` `(` $network `:` type($network) `)` attr-dict
 ```
 
 The `phy.ready` operation tests its operand network if the given channel
@@ -506,7 +506,7 @@ boolean result, which is true if it is ready to send, or false if it is not.
 Example:
 
 ```mlir
-%0 = phy.ready(%net : !phy.net<i32>, 1)
+%0 = phy.ready<1>(%net : !phy.net<i32>)
 ```
 
 Interfaces: InferTypeOpInterface
@@ -686,7 +686,7 @@ non-blocking network receive test operation
 Syntax:
 
 ```
-operation ::= `phy.valid` `(` $network `:` type($network) `,` $channel `)` attr-dict
+operation ::= `phy.valid` `<` $channel `>` `(` $network `:` type($network) `)` attr-dict
 ```
 
 The `phy.valid` operation tests its operand network if the given channel
@@ -696,7 +696,7 @@ result, which is true if there is data to receive, or false if there is not.
 Example:
 
 ```mlir
-%0 = phy.valid(%net : !phy.net<i32>, 1)
+%0 = phy.valid<1>(%net : !phy.net<i32>)
 ```
 
 Interfaces: InferTypeOpInterface
